@@ -51,8 +51,6 @@ def container_listening(client: DockerClient) -> None:
             'content': f':rotating_light: The container **{container_name}** (*{container_id[:12]}*) has stopped at {date_time}. Reason: {reason}'
         }
 
-        print(payload)
-
         send_message(payload)
 
 
