@@ -1,0 +1,22 @@
+FROM python:3.13.0rc1-alpine
+
+WORKDIR /app
+
+ARG DOCKER_HOST
+ARG DISCORD_WEBHOOK_URL
+ARG MACHINE_NAME
+
+ENV DOCKER_HOST=${DOCKER_HOST}
+ENV DISCORD_WEBHOOK_URL=${DISCORD_WEBHOOK_URL}
+ENV MACHINE_NAME=${MACHINE_NAME}
+
+RUN echo "DOCKER_HOST=${DOCKER_HOST}" >> .env
+RUN echo "DISCORD_WEBHOOK_URL=${DISCORD_WEBHOOK_URL}" >> .env
+RUN echo "MACHINE_NAME=${MACHINE_NAME}" >> .env
+
+COPY requirements.txt /app/
+RUN pip install -r requirements.txt
+
+COPY main.py /app/
+
+CMD ["python", "main.py"]
