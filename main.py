@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-docker_host = os.getenv('DOCKER_HOST', 'tcp://127.0.0.1:2375')
+docker_host = os.getenv('DOCKER_HOST', 'unix:///var/run/docker.sock')
 webhook_url = os.getenv('DISCORD_WEBHOOK_URL', '')
 machine_name = os.getenv('MACHINE_NAME', 'Unknown')
 
