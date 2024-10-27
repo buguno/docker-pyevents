@@ -16,10 +16,18 @@ webhook_url = os.getenv('DISCORD_WEBHOOK_URL', '')
 client = docker.DockerClient(base_url=docker_host)
 
 
+def send_message(payload: dict) -> None:
+    response = requests.post(webhook_url, json=payload)
+    if response.status_code != 204:
+        print(
+            f'Error sending to Discord: {response.status_code}, {response.text}'
+        )
+
+
 def exit_handler(signum: int, frame: FrameType | None) -> None:
     payload = {'content': ':disappointed: Received *SIGTERM*. Goodbye!'}
 
-    requests.post(webhook_url, json=payload)
+    send_message(payload)
     sys.exit(0)
 
 
@@ -57,8 +65,4 @@ if __name__ == '__main__':
 
         print(payload)
 
-        response = requests.post(webhook_url, json=payload)
-        if response.status_code != 204:
-            print(
-                f'Error sending to Discord: {response.status_code}, {response.text}'
-            )
+        send_message(payload)
