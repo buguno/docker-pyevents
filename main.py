@@ -4,16 +4,14 @@ import signal
 import sys
 from types import FrameType
 
-import docker
 import requests
+from docker import DockerClient
 from dotenv import load_dotenv
 
 load_dotenv()
 
 docker_host = os.getenv('DOCKER_HOST', 'tcp://127.0.0.1:2375')
 webhook_url = os.getenv('DISCORD_WEBHOOK_URL', '')
-
-client = docker.DockerClient(base_url=docker_host)
 
 
 def send_message(payload: dict) -> None:
@@ -24,17 +22,7 @@ def send_message(payload: dict) -> None:
         )
 
 
-def exit_handler(signum: int, frame: FrameType | None) -> None:
-    payload = {'content': ':disappointed: Received *SIGTERM*. Goodbye!'}
-
-    send_message(payload)
-    sys.exit(0)
-
-
-if __name__ == '__main__':
-    signal.signal(signal.SIGTERM, exit_handler)
-    signal.signal(signal.SIGINT, exit_handler)
-
+def container_listening(client: DockerClient) -> None:
     for event in client.events(decode=True, filters={'event': 'die'}):
         container_id = event.get('id', '')
         container_name = (
@@ -66,3 +54,19 @@ if __name__ == '__main__':
         print(payload)
 
         send_message(payload)
+
+
+def exit_handler(signum: int, frame: FrameType | None) -> None:
+    payload = {'content': ':disappointed: Received *SIGTERM*. Goodbye!'}
+
+    send_message(payload)
+    sys.exit(0)
+
+
+if __name__ == '__main__':
+    client = DockerClient(base_url=docker_host)
+
+    signal.signal(signal.SIGTERM, exit_handler)
+    signal.signal(signal.SIGINT, exit_handler)
+
+    container_listening(client)
