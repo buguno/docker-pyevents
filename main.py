@@ -12,6 +12,7 @@ load_dotenv()
 
 docker_host = os.getenv('DOCKER_HOST', 'tcp://127.0.0.1:2375')
 webhook_url = os.getenv('DISCORD_WEBHOOK_URL', '')
+machine_name = os.getenv('MACHINE_NAME', 'Unknown')
 
 
 def send_message(payload: dict) -> None:
@@ -48,14 +49,16 @@ def container_listening(client: DockerClient) -> None:
             reason = f'The container stopped unexpectedly with exit code `{exit_code}`. Logs:\n```{logs}```'
 
         payload = {
-            'content': f':rotating_light: The container **{container_name}** (*{container_id[:12]}*) has stopped at {date_time}. Reason: {reason}'
+            'content': f':rotating_light: The container **{container_name}** (*{container_id[:12]}*) in **{machine_name}** has stopped at {date_time}. Reason: {reason}'
         }
 
         send_message(payload)
 
 
 def exit_handler(signum: int, frame: FrameType | None) -> None:
-    payload = {'content': ':disappointed: Received *SIGTERM*. Goodbye!'}
+    payload = {
+        'content': f':scream: **{machine_name}** received *SIGTERM*, goodbye!'
+    }
 
     send_message(payload)
     sys.exit(0)
