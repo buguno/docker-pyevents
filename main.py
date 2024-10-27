@@ -1,5 +1,8 @@
 import datetime
 import os
+import signal
+import sys
+from types import FrameType
 
 import docker
 import requests
@@ -12,28 +15,50 @@ webhook_url = os.getenv('DISCORD_WEBHOOK_URL', '')
 
 client = docker.DockerClient(base_url=docker_host)
 
-for event in client.events(decode=True, filters={'event': 'die'}):
-    container_id = event.get('id', '')
-    container_name = event.get('Actor', {}).get('Attributes', {}).get('name', 'Unknown')
-    epoch_time = event.get('time', 0)
-    exit_code = event.get('Actor', {}).get('Attributes', {}).get('exitCode', 'Unknown')
 
-    date_time = datetime.datetime.fromtimestamp(epoch_time) - datetime.timedelta(hours=3)
+def exit_handler(signum: int, frame: FrameType | None) -> None:
+    payload = {'content': ':disappointed: Received *SIGTERM*. Goodbye!'}
 
-    container = client.containers.get(container_id)
-    logs = container.logs(tail=10).decode('utf-8').strip()
+    requests.post(webhook_url, json=payload)
+    sys.exit(0)
 
-    if exit_code == '0':
-        reason = 'The container stopped successfully.'
-    else:
-        reason = f'The container stopped unexpectedly with exit code `{exit_code}`. Logs:\n```{logs}```'
 
-    payload = {
-        'content': f':rotating_light: The container **{container_name}** (*{container_id[:12]}*) has stopped at {date_time}. Reason: {reason}'
-    }
+if __name__ == '__main__':
+    signal.signal(signal.SIGTERM, exit_handler)
+    signal.signal(signal.SIGINT, exit_handler)
 
-    print(payload)
+    for event in client.events(decode=True, filters={'event': 'die'}):
+        container_id = event.get('id', '')
+        container_name = (
+            event.get('Actor', {}).get('Attributes', {}).get('name', 'Unknown')
+        )
+        epoch_time = event.get('time', 0)
+        exit_code = (
+            event.get('Actor', {})
+            .get('Attributes', {})
+            .get('exitCode', 'Unknown')
+        )
 
-    response = requests.post(webhook_url, json=payload)
-    if response.status_code != 204:
-        print(f'Error sending to Discord: {response.status_code}, {response.text}')
+        date_time = datetime.datetime.fromtimestamp(
+            epoch_time
+        ) - datetime.timedelta(hours=3)
+
+        container = client.containers.get(container_id)
+        logs = container.logs(tail=10).decode('utf-8').strip()
+
+        if exit_code == '0':
+            reason = 'The container stopped successfully.'
+        else:
+            reason = f'The container stopped unexpectedly with exit code `{exit_code}`. Logs:\n```{logs}```'
+
+        payload = {
+            'content': f':rotating_light: The container **{container_name}** (*{container_id[:12]}*) has stopped at {date_time}. Reason: {reason}'
+        }
+
+        print(payload)
+
+        response = requests.post(webhook_url, json=payload)
+        if response.status_code != 204:
+            print(
+                f'Error sending to Discord: {response.status_code}, {response.text}'
+            )
