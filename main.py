@@ -29,7 +29,7 @@ for event in client.events(decode=True, filters={'event': 'die'}):
         reason = f'The container stopped unexpectedly with exit code `{exit_code}`. Logs:\n```{logs}```'
 
     payload = {
-        'content': f'The container **{container_name}** (*{container_id}*) has stopped at {date_time}. Reason: {reason}'
+        'content': f':rotating_light: The container **{container_name}** (*{container_id[:12]}*) has stopped at {date_time}. Reason: {reason}'
     }
 
     print(payload)
