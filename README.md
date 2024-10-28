@@ -11,7 +11,7 @@ Get Discord notifications when Docker containers die.
 
 ### Creating a virtual environment (venv) and installing requirements
 
-1. **Create the Virtual Environment:**
+1. **Create the virtual environment:**
 
    To create a virtual environment, use the following command in your terminal:
 
@@ -21,7 +21,7 @@ Get Discord notifications when Docker containers die.
 
    > This will create a folder named *venv* in your current directory.
 
-2. Activate the virtual environment:
+2. **Activate the virtual environment:**
 
     After creating it, activate the virtual environment using the appropriate command for your operating system:
 
@@ -37,7 +37,7 @@ Get Discord notifications when Docker containers die.
     .\venv\Scripts\activate
     ```
 
-3. Install packages from `requirements.txt`:
+3. **Install packages from `requirements.txt`:**
 
     With the virtual environment activated, install the dependencies listed in the `requirements.txt` file:
 
@@ -45,7 +45,7 @@ Get Discord notifications when Docker containers die.
     pip install -r requirements.txt
     ```
 
-4. Deactivate the virtual environment (Optional):
+4. **Deactivate the virtual environment (Optional):**
 
     When you're done using the virtual environment, you can deactivate it with the command:
 
